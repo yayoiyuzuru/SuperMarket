@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzj.admin.mapper.OverflowListMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.lzj.admin.pojo.OverflowList">
+        <id column="id" property="id" />
+        <result column="overflow_date" property="overflowDate" />
+        <result column="overflow_number" property="overflowNumber" />
+        <result column="remarks" property="remarks" />
+        <result column="user_id" property="userId" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        "id", "overflow_date", "overflow_number", "remarks", "user_id"
+    </sql>
+
+    <select id="getOverflowNumber" resultType="java.lang.String">
+        SELECT MAX("overflow_number") AS overflowNumber
+        FROM t_overflow_list
+        WHERE TO_DAYS("overflow_date") = TO_DAYS(NOW())
+    </select>
+
+    <select id="overFlowList" resultType="com.lzj.admin.pojo.OverflowList">
+        SELECT
+            dl."id",
+            dl."overflow_date",
+            dl."overflow_number",
+            dl."remarks",
+            dl."user_id",
+            u."user_name" AS userName
+        FROM t_overflow_list dl
+        LEFT JOIN t_user u ON dl."user_id" = u."id"
+        <where>
+            <if test="null != overFlowListQuery.startDate and overFlowListQuery.startDate != ''">
+                AND dl."overflow_date" &gt;= #{overFlowListQuery.startDate}
+            </if>
+            <if test="null != overFlowListQuery.endDate and overFlowListQuery.endDate != ''">
+                AND dl."overflow_date" &lt;= #{overFlowListQuery.endDate}
+            </if>
+        </where>
+    </select>
+
+</mapper>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzj.admin.mapper.UserRoleMapper">
+
+    <select id="findRoleByUserName" resultType="string">
+        SELECT
+            tr."name"
+        FROM t_user_role ur
+        LEFT JOIN t_role tr ON tr."id" = ur."role_id"
+        LEFT JOIN t_user tu ON tu."id" = ur."user_id"
+        WHERE tr."is_del" != 1 AND tu."user_name" = #{username}
+    </select>
+
+</mapper>
