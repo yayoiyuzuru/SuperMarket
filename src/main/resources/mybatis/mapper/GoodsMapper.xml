@@ -33,7 +33,7 @@
 	    from t_goods g left join t_goods_unit gu on g.unit = gu.id
 	    left join t_goods_type gt on g.type_id = gt.id
 	    <where>
-	        g.is_del =0
+	        g.is_del = 0
 	        <if test="null != goodsQuery.goodsName and goodsQuery.goodsName !=''">
 	            and g.name like '%' || #{goodsQuery.goodsName} || '%'
 	        </if>
@@ -44,5 +44,6 @@
 	        	</foreach>
 	        </if>
 	    </where>
+	    order by g.id asc
 	</select>
 </mapper>

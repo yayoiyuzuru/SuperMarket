@@ -14,4 +14,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface GoodsService extends IService<Goods> {
 	Map<String, Object> goodsList(GoodsQuery goodsQuery);
+	String genGoodsCode();
+	void saveGoods(Goods goods);
+	void updateGoods (Goods goods);
+	void deleteGoods(Integer id);
 }

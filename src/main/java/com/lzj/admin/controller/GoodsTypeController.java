@@ -29,12 +29,13 @@ public class GoodsTypeController {
     @RequestMapping("queryAllGoodsTypes")
     @ResponseBody
     public List<TreeDto> queryAllGoodsTypes(Integer typeId){
-        return goodsTypeService.queryAllGoodsTypes();
+        return goodsTypeService.queryAllGoodsTypes(typeId);
     }
 
 
     @RequestMapping("index")
     public String index(){
+    	
         return "goodsType/goods_type";
     }
 
@@ -42,7 +43,7 @@ public class GoodsTypeController {
     @RequestMapping("list")
     @ResponseBody
     public Map<String,Object> goodsTypeList(){
-        return null;
+        return goodsTypeService.goodsTypeList();
     }
 
 
@@ -55,6 +56,7 @@ public class GoodsTypeController {
     @RequestMapping("save")
     @ResponseBody
     public RespBean saveGoodsType(GoodsType goodsType){
+    	goodsTypeService.saveGoodsType(goodsType);
         return RespBean.success("商品类别添加成功");
     }
 
@@ -62,6 +64,7 @@ public class GoodsTypeController {
     @RequestMapping("delete")
     @ResponseBody
     public RespBean deleteGoodsType(Integer id){
+    	goodsTypeService.deleteGoodsType(id);
         return RespBean.success("商品类别删除成功");
     }
 

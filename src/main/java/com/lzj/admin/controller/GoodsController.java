@@ -53,7 +53,18 @@ public class GoodsController {
      */
     @RequestMapping("addOrUpdateGoodsPage")
     public String addOrUpdateGoodsPage(Integer id, Integer typeId,Model model){
-        return "goods/add_update";
+    	if(null !=id){
+    		Goods goods = goodsService.getById(id);
+    		// 更新处理
+    		model.addAttribute("goods",goods);
+    		model.addAttribute("goodsType", goodsTypeService.getById(goods.getTypeId()));
+    	} else {
+    		//添加处理
+    		if(null !=typeId){
+    			model.addAttribute("goodsType",goodsTypeService.getById(typeId));
+    		}		
+    	}
+    	return "goods/add_update";
     }
 
     /**
@@ -75,6 +86,7 @@ public class GoodsController {
     @RequestMapping("save")
     @ResponseBody
     public RespBean saveGoods(Goods goods){
+    	goodsService.saveGoods(goods);
         return RespBean.success("商品记录添加成功");
     }
 
@@ -87,12 +99,14 @@ public class GoodsController {
     @RequestMapping("update")
     @ResponseBody
     public RespBean updateGoods(Goods goods){
+    	goodsService.updateGoods(goods);
         return RespBean.success("商品记录更新成功");
     }
 
     @RequestMapping("delete")
     @ResponseBody
     public RespBean deleteGoods(Integer id){
+    	goodsService.deleteGoods(id);
         return RespBean.success("商品记录删除成功");
     }
 }
