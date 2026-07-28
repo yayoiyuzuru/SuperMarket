@@ -30,8 +30,4 @@ public class ReturnListGoodsController {
     public Map<String,Object> returnListGoodsList(ReturnListGoodsQuery returnListGoodsQuery){
         return returnListGoodsService.returnListGoodsList(returnListGoodsQuery);
     }
-
-
-
-
 }

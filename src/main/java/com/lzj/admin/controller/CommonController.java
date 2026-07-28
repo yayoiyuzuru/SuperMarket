@@ -1,8 +1,12 @@
 package com.lzj.admin.controller;
 
 import com.lzj.admin.model.GoodsModel;
+import com.lzj.admin.pojo.Goods;
+import com.lzj.admin.pojo.GoodsType;
 import com.lzj.admin.query.GoodsQuery;
 import com.lzj.admin.service.GoodsService;
+import com.lzj.admin.service.GoodsTypeService;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,6 +25,8 @@ public class CommonController {
     @Resource
     private GoodsService goodsService;
 
+    @Resource
+    private GoodsTypeService goodsTypeService;
 
 
     /**
@@ -40,7 +46,16 @@ public class CommonController {
      */
     @RequestMapping("toAddGoodsInfoPage")
     public String toGoodsInfoPage(Integer gid, Model model){
-        return "common/goods_add_update";
+    	Goods goods = goodsService.getById(gid);
+    	goods.setUnitName(goods.getUnit());
+    	if(goods.getTypeId()!=null){
+	    	GoodsType goodsType = goodsTypeService.getById(goods.getTypeId());
+	    	if(goodsType!=null){
+	    		goods.setTypeName(goodsType.getName());
+	    	}
+    	}
+    	model.addAttribute("goods", goods);
+    	return "common/goods_add_update";
     }
 
 
@@ -52,7 +67,18 @@ public class CommonController {
      */
     @RequestMapping("toUpdateGoodsInfoPage")
     public String toUpdateGoodsInfoPage(GoodsModel goodsModel, Model model){
-        return "common/goods_add_update";
+    	Goods goods = goodsService.getById(goodsModel.getId());
+    	goods.setUnitName(goods.getUnit());
+    	if(goods.getTypeId() != null){
+		    GoodsType goodsType = goodsTypeService.getById(goods.getTypeId());
+		    if(goodsType != null){
+			    goods.setTypeName(goodsType.getName());
+			    }
+		    }
+	    model.addAttribute("goods", goods);
+	    model.addAttribute("goodsModel", goodsModel);
+	    model.addAttribute("flag",1);
+	    return "common/goods_add_update";
     }
 
 
@@ -69,10 +95,10 @@ public class CommonController {
 
     @RequestMapping("stockList")
     @ResponseBody
-    public Map<String,Object> stockLick(GoodsQuery goodsQuery){
-        return null;
-    }
-
+    public Map<String,Object> stockList(GoodsQuery goodsQuery){
+    	goodsQuery.setType(2);
+        return goodsService.goodsList(goodsQuery);
+    } 
 
     /**
      * 商品报损|报溢查询页
@@ -103,7 +129,7 @@ public class CommonController {
     @ResponseBody
     public Map<String,Object> listAlarm(GoodsQuery goodsQuery){
         goodsQuery.setType(3);
-        return null;
+        return goodsService.goodsList(goodsQuery);
     }
 
 

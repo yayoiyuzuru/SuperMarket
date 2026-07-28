@@ -32,7 +32,7 @@ public class RoleController {
     }
     @RequestMapping("list")
     @ResponseBody
-    public Map list(RoleQuery roleQuery){
+    public Map<?, ?> list(RoleQuery roleQuery){
         return roleServiceimpl.roleList(roleQuery);
     }
     @RequestMapping("addOrUpdateRolePage")

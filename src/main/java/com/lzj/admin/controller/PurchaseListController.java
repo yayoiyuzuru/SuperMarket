@@ -1,8 +1,11 @@
 package com.lzj.admin.controller;
 
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.lzj.admin.model.RespBean;
 import com.lzj.admin.pojo.PurchaseList;
+import com.lzj.admin.pojo.PurchaseListGoods;
 import com.lzj.admin.query.PurchaseListQuery;
 import com.lzj.admin.service.PurchaseListService;
 
@@ -15,6 +18,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Resource;
 import java.security.Principal;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -38,6 +42,8 @@ public class PurchaseListController {
      */
     @RequestMapping("index")
     public String index(Model model){
+    	model.addAttribute("purchaseNumber",purchaseListService.getNextPurchaseNumber());
+    	System.out.println(purchaseListService.getNextPurchaseNumber());
         return "purchase/purchase";
     }
 
@@ -45,9 +51,16 @@ public class PurchaseListController {
     @RequestMapping("save")
     @ResponseBody
     public RespBean save(PurchaseList purchaseList, String goodsJson, Principal principal){
-        return RespBean.success("商品进货入库成功!");
+    	String userName = principal.getName();
+    	purchaseList.setUserId(userService.findForName(userName).getId());
+        Gson gson = new Gson();
+        System.out.println(goodsJson);
+        List<PurchaseListGoods> plgList = gson.fromJson(goodsJson,new TypeToken<List<PurchaseListGoods>>(){}.getType());
+        purchaseListService.savePurchaseList(purchaseList,plgList);
+        return RespBean.success("商品退货出库成功!");
     }
-
+    
+    
     /**
      * 进货单查询页
      * @return
@@ -61,7 +74,7 @@ public class PurchaseListController {
     @RequestMapping("list")
     @ResponseBody
     public Map<String,Object> purchaseList(PurchaseListQuery purchaseListQuery){
-        return null;
+    	return purchaseListService.purchaseList(purchaseListQuery);
     }
 
     /**
@@ -72,12 +85,13 @@ public class PurchaseListController {
     @RequestMapping("delete")
     @ResponseBody
     public RespBean delete(Integer id){
+    	purchaseListService.deletePurchaseList(id);
         return RespBean.success("删除成功");
     }
 
     @RequestMapping("countPurchase")
     @ResponseBody
     public Map<String,Object> countPurchase(PurchaseListQuery purchaseListQuery){
-        return null;
+        return purchaseListService.countPurchase(purchaseListQuery);
     }
 }

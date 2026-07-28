@@ -22,7 +22,7 @@
     <select id="getNextSaleNumber" resultType="java.lang.String">
         select max(sale_number) as saleNumber
         from t_sale_list
-        where to_days(sale_date) = to_days(now())
+        where TRUNC(sale_date) = TRUNC(SYSDATE)
     </select>
 
 
@@ -46,10 +46,10 @@
                 and sl.state = #{saleListQuery.state}
             </if>
             <if test="null != saleListQuery.startDate and saleListQuery.startDate !='' ">
-                and sale_date &gt;= #{saleListQuery.startDate}
+                and sale_date &gt;= TO_DATE(#{saleListQuery.startDate}, 'YYYY-MM-DD')
             </if>
             <if test="null !=saleListQuery.endDate and saleListQuery.endDate !='' ">
-                and sale_date &lt;= #{saleListQuery.endDate}
+                and sale_date &lt;= TO_DATE(#{saleListQuery.endDate}, 'YYYY-MM-DD')
             </if>
 
         </where>
@@ -63,15 +63,15 @@
         LEFT JOIN t_goods_type gt on plg.type_id = gt.id
         <where>
             <if test="null != saleListQuery.startDate and saleListQuery.startDate !='' ">
-                and sale_date &gt;=#{saleListQuery.startDate}
+                and sale_date &gt;= TO_DATE(#{saleListQuery.startDate}, 'YYYY-MM-DD')
             </if>
             <if test="null !=saleListQuery.endDate and saleListQuery.endDate !='' ">
-                and sale_date &lt;=#{saleListQuery.endDate}
+                and sale_date &lt;= TO_DATE(#{saleListQuery.endDate}, 'YYYY-MM-DD')
             </if>
             <if test="null != saleListQuery.goodsName and saleListQuery.goodsName !='' ">
                 and
                 (
-                plg.name like concat('%',#{saleListQuery.goodsName},'%') or plg.code =#{saleListQuery.goodsName}
+                plg.name like '%' || #{saleListQuery.goodsName} || '%' or plg.code =#{saleListQuery.goodsName}
                 )
             </if>
             <if test="null !=saleListQuery.typeIds and saleListQuery.typeIds.size>0">
@@ -85,59 +85,98 @@
 
 
     <select id="saleListQueryList" resultType="com.lzj.admin.model.CountResultModel">
-        select
-        sl.sale_number as number,
-        sl.sale_date as date,
-        c.`name` as name,
-        plg.`code`,
-        plg.`name` as goodsName,
-        plg.model,
-        plg.unit as unitName,
-        plg.price,
-        plg.num,
-        plg.total,
-        gt.`name` as typeName
-        from t_sale_list sl
-        LEFT JOIN t_customer c on sl.customer_id = c.id
-        left join t_sale_list_goods plg on sl.id = plg.sale_list_id
-        LEFT JOIN t_goods_type gt on plg.type_id = gt.id
-        <where>
-            <if test="null != saleListQuery.startDate and saleListQuery.startDate !='' ">
-                and sale_date &gt;=#{saleListQuery.startDate}
-            </if>
-            <if test="null !=saleListQuery.endDate and saleListQuery.endDate !='' ">
-                and sale_date &lt;=#{saleListQuery.endDate}
-            </if>
-            <if test="null != saleListQuery.goodsName and saleListQuery.goodsName !='' ">
-                and
-                (
-                plg.name like concat('%',#{saleListQuery.goodsName},'%') or plg.code =#{saleListQuery.goodsName}
-                )
-            </if>
-            <if test="null !=saleListQuery.typeIds and saleListQuery.typeIds.size>0">
-                and plg.type_id in
-                <foreach collection="saleListQuery.typeIds" item="typeId" open="(" separator="," close=")">
-                    #{typeId}
-                </foreach>
-            </if>
-        </where>
-        limit  #{saleListQuery.index},#{saleListQuery.limit}
-    </select>
+	    <bind name="start" value="saleListQuery.index + 1"/>
+	    <bind name="end" value="saleListQuery.index + saleListQuery.limit"/>
+	    SELECT * FROM (
+	        SELECT rownum rn, t.* FROM (
+	            SELECT
+	                sl.sale_number as "number",
+	                sl.sale_date as "date",
+	                c.name as name,
+	                plg.code,
+	                plg.name as goodsName,
+	                plg.model,
+	                plg.unit as unitName,
+	                plg.price,
+	                plg.num,
+	                plg.total,
+	                gt.name as typeName
+	            FROM t_sale_list sl
+	            LEFT JOIN t_customer c ON sl.customer_id = c.id
+	            LEFT JOIN t_sale_list_goods plg ON sl.id = plg.sale_list_id
+	            LEFT JOIN t_goods_type gt ON plg.type_id = gt.id
+	            <where>
+	                <if test="saleListQuery.startDate != null and saleListQuery.startDate != ''">
+	                    AND sl.sale_date &gt;= TO_DATE(#{saleListQuery.startDate}, 'YYYY-MM-DD')
+	                </if>
+	                <if test="saleListQuery.endDate != null and saleListQuery.endDate != ''">
+	                    AND sl.sale_date &lt;= TO_DATE(#{saleListQuery.endDate}, 'YYYY-MM-DD')
+	                </if>
+	                <if test="saleListQuery.goodsName != null and saleListQuery.goodsName != ''">
+	                    AND (plg.name LIKE '%' || #{saleListQuery.goodsName} || '%' OR plg.code = #{saleListQuery.goodsName})
+	                </if>
+	                <if test="saleListQuery.typeIds != null and saleListQuery.typeIds.size > 0">
+	                    AND plg.type_id IN
+	                    <foreach collection="saleListQuery.typeIds" item="typeId" open="(" separator="," close=")">
+	                        #{typeId}
+	                    </foreach>
+	                </if>
+	            </where>
+	            ORDER BY sl.sale_date DESC
+	        ) t
+	        WHERE rownum &lt;= #{end}
+	    ) tmp
+	    WHERE rn &gt;= #{start}
+	</select>
 
 
     <select id="countDaySale" resultType="java.util.Map">
-        select
-        <!--成本金额-->
-        sum(t3.purchasing_price * t1.num) as amountCost,
-        <!--销售金额-->
-        sum(t1.price * t1.num) as amountSale,
-        t2.sale_date as saleDate
-        from
-        t_sale_list_goods t1
-        LEFT JOIN t_sale_list t2 on t1.sale_list_id = t2.id
-        LEFT JOIN t_goods t3 on t1.goods_id =t3.id
-        where t2.sale_date BETWEEN #{begin}	 and #{end}
-        GROUP BY t2.sale_date
-    </select>
-
+	    select
+	        to_char(t2.sale_date, 'YYYY-MM-DD') as "saleDate",
+	        sum(nvl(t3.purchasing_price, 0) * t1.num) as "amountCost",
+	        sum(nvl(t1.price, 0) * t1.num) as "amountSale"
+	    from
+	        t_sale_list_goods t1
+	        LEFT JOIN t_sale_list t2 on t1.sale_list_id = t2.id
+	        LEFT JOIN t_goods t3 on t1.goods_id = t3.id
+	    <where>
+	        <if test="begin != null and begin != ''">
+	            <![CDATA[
+	                and trunc(t2.sale_date) >= to_date(#{begin}, 'YYYY-MM-DD')
+	            ]]>
+	        </if>
+	        <if test="end != null and end != ''">
+	            <![CDATA[
+	                and trunc(t2.sale_date) <= to_date(#{end}, 'YYYY-MM-DD')
+	            ]]>
+	        </if>
+	    </where>
+	    GROUP BY to_char(t2.sale_date, 'YYYY-MM-DD')
+	    ORDER BY to_char(t2.sale_date, 'YYYY-MM-DD') ASC
+	</select>
+	
+	<select id="countMonthSale" resultType="java.util.Map">
+	    select
+	        to_char(t2.sale_date, 'YYYY-MM') as "saleMonth",
+	        sum(nvl(t3.purchasing_price, 0) * t1.num) as "amountCost",
+	        sum(nvl(t1.price, 0) * t1.num) as "amountSale"
+	    from
+	        t_sale_list_goods t1
+	        LEFT JOIN t_sale_list t2 on t1.sale_list_id = t2.id
+	        LEFT JOIN t_goods t3 on t1.goods_id = t3.id
+	    <where>
+	        <if test="begin != null and begin != ''">
+	            <![CDATA[
+	                and trunc(t2.sale_date) >= to_date(#{begin} || '-01', 'YYYY-MM-DD')
+	            ]]>
+	        </if>
+	        <if test="end != null and end != ''">
+	            <![CDATA[
+	                and trunc(t2.sale_date) <= last_day(to_date(#{end} || '-01', 'YYYY-MM-DD'))
+	            ]]>
+	        </if>
+	    </where>
+	    GROUP BY to_char(t2.sale_date, 'YYYY-MM')
+	    ORDER BY to_char(t2.sale_date, 'YYYY-MM') ASC
+	</select>
 </mapper>

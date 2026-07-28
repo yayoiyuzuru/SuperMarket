@@ -94,51 +94,84 @@ public class SaleListController {
 
     @RequestMapping("countSaleByDay")
     @ResponseBody
-    public Map<String,Object> countDaySale(String begin,String end){
-        Map<String,Object> result =new HashMap<String,Object>();
-        List<SaleCount> saleCounts =new ArrayList<SaleCount>();
-        /**
-         * 2021-03-15  -  2021-03-30
-         */
-        List<Map<String,Object>> list = saleListService.countDaySale(begin,end);
-        /**
-         * 根据传入的时间段 生成日期列表
-         */
-        List<String> datas = DateUtil.getRangeDates(begin,end);
+    public Map<String, Object> countDaySale(String begin, String end) {
+        Map<String, Object> result = new HashMap<>();
+        List<SaleCount> saleCounts = new ArrayList<>();
+        
+        List<Map<String, Object>> list = saleListService.countDaySale(begin, end);
+        List<String> datas = DateUtil.getRangeDates(begin, end);
+        
         for (String data : datas) {
-            SaleCount saleCount =new SaleCount();
+            SaleCount saleCount = new SaleCount();
             saleCount.setDate(data);
-            boolean flag =true;
-            for(Map<String,Object> map:list){
-                String dd = map.get("saleDate").toString().substring(0,10);
-                if(data.equals(dd)){
-                    saleCount.setAmountCost(MathUtil.format2Bit(Float.parseFloat(map.get("amountCost").toString())));
-                    saleCount.setAmountSale(MathUtil.format2Bit(Float.parseFloat(map.get("amountSale").toString())));
-                    saleCount.setAmountProfit(MathUtil.format2Bit(saleCount.getAmountSale()-saleCount.getAmountCost()));
-                    flag =false;
+            boolean flag = true;
+            
+            for (Map<String, Object> map : list) {
+                Object saleDateObj = map.get("saleDate");
+                if (saleDateObj == null) {
+                    continue;
+                }
+                
+                String dd = saleDateObj.toString();
+                if (dd.length() > 10) {
+                    dd = dd.substring(0, 10);
+                }
+                
+                if (data.equals(dd)) {
+                    float amountCost = Float.parseFloat(map.get("amountCost").toString());
+                    float amountSale = Float.parseFloat(map.get("amountSale").toString());
+                    
+                    saleCount.setAmountCost(MathUtil.format2Bit(amountCost));
+                    saleCount.setAmountSale(MathUtil.format2Bit(amountSale));
+                    saleCount.setAmountProfit(MathUtil.format2Bit(amountSale - amountCost));
+                    flag = false;
+                    break;
                 }
             }
-            if(flag){
-                saleCount.setAmountProfit(0F);
-                saleCount.setAmountSale(0F);
+            
+            if (flag) {
                 saleCount.setAmountCost(0F);
+                saleCount.setAmountSale(0F);
+                saleCount.setAmountProfit(0F);
             }
-            saleCounts.add(saleCount);
+            if (saleCount.getAmountSale() > 0) {
+                saleCounts.add(saleCount);
+            }
         }
-
-        result.put("count",saleCounts.size());
-        result.put("data",saleCounts);
-        result.put("code",0);
-        result.put("msg","");
+        
+        result.put("code", 0);
+        result.put("msg", "success");
+        result.put("count", saleCounts.size());
+        result.put("data", saleCounts);
         return result;
     }
 
 
     @RequestMapping("countSaleByMonth")
     @ResponseBody
-    public Map<String,Object> countSaleByMonth(String begin,String end){
-        return null;
+    public Map<String, Object> countSaleByMonth(String begin, String end) {
+        Map<String, Object> result = new HashMap<>();
+        
+        List<Map<String, Object>> list = saleListService.countMonthSale(begin, end);
+        
+        List<SaleCount> saleCounts = new ArrayList<>();
+        for (Map<String, Object> map : list) {
+            SaleCount saleCount = new SaleCount();
+            saleCount.setDate(map.get("saleMonth").toString());
+            
+            float amountCost = Float.parseFloat(map.get("amountCost").toString());
+            float amountSale = Float.parseFloat(map.get("amountSale").toString());
+            
+            saleCount.setAmountCost(MathUtil.format2Bit(amountCost));
+            saleCount.setAmountSale(MathUtil.format2Bit(amountSale));
+            saleCount.setAmountProfit(MathUtil.format2Bit(amountSale - amountCost));
+            saleCounts.add(saleCount);
+        }
+        
+        result.put("code", 0);
+        result.put("msg", "success");
+        result.put("count", saleCounts.size());
+        result.put("data", saleCounts);
+        return result;
     }
-
-
 }

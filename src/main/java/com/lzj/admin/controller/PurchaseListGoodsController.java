@@ -26,7 +26,7 @@ public class PurchaseListGoodsController {
     @RequestMapping("list")
     @ResponseBody
     public Map<String,Object> purchaseListGoodsList(PurchaseListGoodsQuery purchaseListGoodsQuery){
-        return null;
+    	return purchaseListGoodsService.purchaseListGoodsList(purchaseListGoodsQuery);
     }
 
 

@@ -20,10 +20,10 @@
         id, amount_paid, amount_payable, remarks, return_date, return_number, state, supplier_id, user_id
     </sql>
     <select id="getNextReturnNumber" resultType="java.lang.String">
-        select max(return_number) as returnNumber
-        from t_return_list
-        where to_days(return_date) = to_days(now())
-    </select>
+	    select max(return_number) as returnNumber
+	    from t_return_list
+	    where trunc(return_date) = trunc(sysdate)
+	</select>
     <select id="returnList" resultType="com.lzj.admin.pojo.ReturnList">
         SELECT
             tl.*,
@@ -49,8 +49,9 @@
             <if test="null !=returnListQuery.endDate and returnListQuery.endDate !='' ">
                 and return_date &lt;=#{returnListQuery.endDate}
             </if>
-
+	
         </where>
+        order by return_number asc
     </select>
 
 </mapper>

@@ -29,6 +29,7 @@ public class ReportController {
      */
     @RequestMapping("countPurchase")
     public String countPurchase(){
+    	
         return "count/purchase";
     }
 
@@ -59,7 +60,5 @@ public class ReportController {
     public String countMonthSale(){
         return "count/month_sale";
     }
-
-
 
 }

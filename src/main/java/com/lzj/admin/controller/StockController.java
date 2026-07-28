@@ -42,12 +42,11 @@ public class StockController {
     @ResponseBody
     public Map<String,Object> listNoInventoryQuantity(GoodsQuery goodsQuery){
         goodsQuery.setType(1);
-        //return goodsService.goodsList(goodsQuery);
-        return null;
+        return goodsService.goodsList(goodsQuery);
     }
 
     /**
-     * 库存量为0 的商品记录
+     * 库存量不为0 的商品记录
      * @param goodsQuery
      * @return
      */
@@ -55,8 +54,7 @@ public class StockController {
     @ResponseBody
     public Map<String,Object> listHasInventoryQuantity(GoodsQuery goodsQuery){
         goodsQuery.setType(2);
-//        return goodsService.goodsList(goodsQuery);
-        return null;
+        return goodsService.goodsList(goodsQuery);
     }
 
 
@@ -69,7 +67,7 @@ public class StockController {
     @RequestMapping("updateStock")
     @ResponseBody
     public RespBean updateGoods(Goods goods){
-//        goodsService.updateStock(goods);
+        goodsService.updateStock(goods);
         return RespBean.success("商品记录更新成功!");
     }
 
@@ -77,8 +75,7 @@ public class StockController {
     @RequestMapping("deleteStock")
     @ResponseBody
     public RespBean deleteStock(Integer id){
-
-//        goodsService.deleteStock(id);
+        goodsService.deleteStock(id);
         return RespBean.success("商品记录删除成功!");
     }
 

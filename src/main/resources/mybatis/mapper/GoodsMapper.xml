@@ -34,6 +34,16 @@
 	    left join t_goods_type gt on g.type_id = gt.id
 	    <where>
 	        g.is_del = 0
+	        <if test="goodsQuery.type == 1">
+            	and g.inventory_quantity = 0
+	        </if>
+	        <if test="goodsQuery.type == 2">
+	            and g.inventory_quantity > 0
+	        </if>
+	        <if test="goodsQuery.type == 3">
+	            and g.min_num > g.inventory_quantity
+	            and g.min_num > 0
+	        </if>
 	        <if test="null != goodsQuery.goodsName and goodsQuery.goodsName !=''">
 	            and g.name like '%' || #{goodsQuery.goodsName} || '%'
 	        </if>

@@ -97,4 +97,16 @@ public class GoodsServiceImpl extends ServiceImpl<GoodsMapper, Goods> implements
 		goods.setIsDel(1);
 		AssertUtil.isTrue(!(this.updateById(goods)), "商品删除失败!");
 	}
+
+	@Override
+	public void updateStock(Goods goods) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void deleteStock(Integer id) {
+		// TODO Auto-generated method stub
+		
+	}
 }
